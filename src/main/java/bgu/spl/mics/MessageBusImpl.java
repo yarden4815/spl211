@@ -1,11 +1,24 @@
 package bgu.spl.mics;
 
+
 /**
  * The {@link MessageBusImpl class is the implementation of the MessageBus interface.
  * Write your implementation here!
  * Only private fields and methods can be added to this class.
  */
 public class MessageBusImpl implements MessageBus {
+
+	private static MessageBus messageBusInstance = null;
+
+	private MessageBusImpl(){
+
+	}
+
+	public static MessageBus getInstance(){
+		if (messageBusInstance == null)
+			messageBusInstance = new MessageBusImpl();
+		return messageBusInstance;
+	}
 	
 	
 	@Override
@@ -18,7 +31,7 @@ public class MessageBusImpl implements MessageBus {
 		
     }
 
-	@Override @SuppressWarnings("unchecked")
+	@Override
 	public <T> void complete(Event<T> e, T result) {
 		
 	}

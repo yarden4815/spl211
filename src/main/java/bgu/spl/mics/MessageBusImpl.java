@@ -1,6 +1,10 @@
 package bgu.spl.mics;
 
 
+import java.util.HashMap;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 /**
  * The {@link MessageBusImpl class is the implementation of the MessageBus interface.
  * Write your implementation here!
@@ -10,7 +14,12 @@ public class MessageBusImpl implements MessageBus {
 
 	private static MessageBus messageBusInstance = null;
 
+	private HashMap<MicroService, Queue<Message>> microServiceQueueHashMap;
+	private HashMap<Class<Message>, Queue<MicroService>> roundRobinQueues;
+
 	private MessageBusImpl(){
+		microServiceQueueHashMap = new HashMap<>();
+		roundRobinQueues = new HashMap<>();
 
 	}
 
@@ -23,7 +32,17 @@ public class MessageBusImpl implements MessageBus {
 	
 	@Override
 	public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
-		
+		boolean found = false;
+		for (Class<Message> c : roundRobinQueues.keySet()){
+			if (c == type){
+				roundRobinQueues.get(c).add(m);
+				found = true;
+			}
+		}
+		if (!found) {
+			roundRobinQueues.put(type, new ConcurrentLinkedQueue<>());
+			roundRobinQueues.get(type).add(m);
+		}
 	}
 
 	@Override
@@ -50,17 +69,22 @@ public class MessageBusImpl implements MessageBus {
 
 	@Override
 	public void register(MicroService m) {
-		
+		if (microServiceQueueHashMap.containsKey(m))
+			throw new IllegalStateException();
+		microServiceQueueHashMap.put(m, new ConcurrentLinkedQueue<>());
 	}
 
 	@Override
 	public void unregister(MicroService m) {
-		
+		microServiceQueueHashMap.remove(m);
 	}
 
 	@Override
 	public Message awaitMessage(MicroService m) throws InterruptedException {
-		
-		return null;
+		Queue<Message> q = microServiceQueueHashMap.get(m);
+		while (q.isEmpty()){
+
+		}
+		return q.poll();
 	}
 }

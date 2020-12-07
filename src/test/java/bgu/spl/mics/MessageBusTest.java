@@ -14,7 +14,7 @@ class MessageBusTest {
 
     @BeforeEach
     private void setUp(){
-        messageBus = new MessageBusImpl();
+        messageBus = MessageBusImpl.getInstance();
     }
 
 

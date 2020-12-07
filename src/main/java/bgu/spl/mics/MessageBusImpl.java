@@ -3,6 +3,7 @@ package bgu.spl.mics;
 
 import java.util.HashMap;
 import java.util.Queue;
+import java.util.Vector;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -17,10 +18,12 @@ public class MessageBusImpl implements MessageBus {
 	private HashMap<MicroService, Queue<Message>> microServiceQueueHashMap;
 	private HashMap<Class<Message>, Queue<MicroService>> roundRobinQueues;
 
+	private HashMap<Event, Future> futures;
+
 	private MessageBusImpl(){
 		microServiceQueueHashMap = new HashMap<>();
 		roundRobinQueues = new HashMap<>();
-
+		futures = new HashMap<>();
 	}
 
 	public static MessageBus getInstance(){
@@ -52,7 +55,8 @@ public class MessageBusImpl implements MessageBus {
 
 	@Override
 	public <T> void complete(Event<T> e, T result) {
-		
+		Future<T> future = futures.get(e);
+		future.resolve(result);
 	}
 
 	@Override
@@ -62,9 +66,16 @@ public class MessageBusImpl implements MessageBus {
 
 	
 	@Override
-	public <T> Future<T> sendEvent(Event<T> e) {
-		
-        return null;
+	public <T> Future<T> sendEvent(Event<T> e){
+		Future<T> future = new Future<>();
+		Queue<MicroService> q = roundRobinQueues.get(e.getClass());
+		MicroService m = q.poll();
+		microServiceQueueHashMap.get(m).add(e);
+		q.add(m);
+		futures.put(e, future);
+		notifyAll();
+
+		return future;
 	}
 
 	@Override
@@ -83,7 +94,7 @@ public class MessageBusImpl implements MessageBus {
 	public Message awaitMessage(MicroService m) throws InterruptedException {
 		Queue<Message> q = microServiceQueueHashMap.get(m);
 		while (q.isEmpty()){
-
+			wait();
 		}
 		return q.poll();
 	}

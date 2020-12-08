@@ -58,7 +58,8 @@ public abstract class MicroService implements Runnable {
      *                 queue.
      */
     protected final <T, E extends Event<T>> void subscribeEvent(Class<E> type, Callback<E> callback) {
-        callbackHashMap.put(type, callback);
+        if (!callbackHashMap.containsKey(type))
+            callbackHashMap.put(type, callback);
         MessageBusImpl.getInstance().subscribeEvent(type, this);
     }
 
@@ -83,7 +84,9 @@ public abstract class MicroService implements Runnable {
      *                 queue.
      */
     protected final <B extends Broadcast> void subscribeBroadcast(Class<B> type, Callback<B> callback) {
-    	
+        if (!callbackHashMap.containsKey(type))
+            callbackHashMap.put(type, callback);
+        MessageBusImpl.getInstance().subscribeBroadcast(type, this);
     }
 
     /**
@@ -155,6 +158,8 @@ public abstract class MicroService implements Runnable {
      */
     @Override
     public final void run() {
+        MessageBus messageBus = MessageBusImpl.getInstance();
+        initialize();
 
     }
 

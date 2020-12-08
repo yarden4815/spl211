@@ -11,4 +11,43 @@ package bgu.spl.mics.application.passiveObjects;
  */
 public class Ewoks {
 
+    private Ewok[] ewoks;
+
+    private static Ewoks ewoksInstance = null;
+
+    public static Ewoks getInstance(int numOfEwoks){
+        if (ewoksInstance == null)
+            ewoksInstance = new Ewoks(numOfEwoks);
+        return ewoksInstance;
+    }
+
+    public static Ewoks getInstance(){
+        if (ewoksInstance == null)
+            throw new IllegalArgumentException("Ewoks have not been initialized.");
+        return ewoksInstance;
+    }
+
+    private Ewoks(int numOfEwoks){
+        ewoks = new Ewok[numOfEwoks];
+        for (int i = 0; i < numOfEwoks; i++){
+            ewoks[i] = new Ewok(i);
+        }
+    }
+
+    public synchronized void acquireEwoks(int[] serialNum) throws InterruptedException{
+        for (int i = 0; i < serialNum.length; i++){
+            while (!ewoks[serialNum[i]].isAvailable()){
+                wait();
+            }
+            ewoks[serialNum[i]].acquire();
+        }
+    }
+
+    public void releaseEwoks(int[] serialNum){
+        for (int i = 0; i < serialNum.length; i++){
+           ewoks[serialNum[i]].release();
+        }
+        notifyAll();
+    }
+
 }

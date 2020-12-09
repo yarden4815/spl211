@@ -26,6 +26,7 @@ public abstract class MicroService implements Runnable {
     private String name;
 
     private HashMap<Class<? extends Message>, Callback> callbackHashMap;
+    private boolean stop;
 
     /**
      * @param name the micro-service name (used mainly for debugging purposes -
@@ -34,6 +35,7 @@ public abstract class MicroService implements Runnable {
     public MicroService(String name) {
     	this.name = name;
     	callbackHashMap = new HashMap<>();
+    	stop = false;
     }
 
     /**
@@ -141,7 +143,7 @@ public abstract class MicroService implements Runnable {
      * message.
      */
     protected final void terminate() {
-    	
+        stop = true;
     }
 
     /**
@@ -159,8 +161,19 @@ public abstract class MicroService implements Runnable {
     @Override
     public final void run() {
         MessageBus messageBus = MessageBusImpl.getInstance();
+        messageBus.register(this);
         initialize();
 
+        while (!stop){
+            Message message = null;
+            try {
+                message = messageBus.awaitMessage(this);
+            } catch (InterruptedException e){e.printStackTrace();}
+            if (message != null)
+                callbackHashMap.get(message).call(message);
+        }
+        Thread.currentThread().stop();
     }
+
 
 }

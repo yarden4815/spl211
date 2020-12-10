@@ -2,9 +2,9 @@ package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.Callback;
 import bgu.spl.mics.MicroService;
-import bgu.spl.mics.application.messages.AttackEvent;
 import bgu.spl.mics.application.messages.BombDestroyerEvent;
 import bgu.spl.mics.application.messages.TerminationBroadcast;
+import bgu.spl.mics.application.passiveObjects.Diary;
 
 /**
  * LandoMicroservice
@@ -14,20 +14,26 @@ import bgu.spl.mics.application.messages.TerminationBroadcast;
 public class LandoMicroservice  extends MicroService {
 
     private long duration;
+    private Diary diary;
 
     public LandoMicroservice(long duration) {
         super("Lando");
         this.duration = duration;
+        diary = Diary.getInstance();
     }
 
     @Override
     protected void initialize() {
-       subscribeEvent(BombDestroyerEvent.class, c -> {
+        subscribeBroadcast(TerminationBroadcast.class, c -> {
+            terminate();
+            diary.setLandoTeminate(System.currentTimeMillis());
+        });
+        subscribeEvent(BombDestroyerEvent.class, c -> {
            try {
                Thread.sleep(duration);
            } catch (InterruptedException e){e.printStackTrace();}
+           complete(c, true);
            sendBroadcast(new TerminationBroadcast());
        });
-       subscribeBroadcast(TerminationBroadcast.class, c -> {terminate();});
     }
 }

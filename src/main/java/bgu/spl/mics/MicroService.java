@@ -172,7 +172,6 @@ public abstract class MicroService implements Runnable {
             if (message != null)
                 callbackHashMap.get(message).call(message);
         }
-        Thread.currentThread().stop();
     }
 
 

@@ -1,7 +1,5 @@
 package bgu.spl.mics.application.services;
 
-import bgu.spl.mics.MessageBus;
-import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.AttackEvent;
 import bgu.spl.mics.application.messages.TerminationBroadcast;
@@ -40,6 +38,7 @@ public class C3POMicroservice extends MicroService {
             }catch (InterruptedException e){e.printStackTrace();}
             ewoks.releaseEwoks(c.getSerials());
             diary.setTotalAttacks();
+            complete(c, true);
             diary.setC3POFinish(System.currentTimeMillis());
         });
     }

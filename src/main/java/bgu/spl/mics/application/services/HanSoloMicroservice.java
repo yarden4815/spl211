@@ -3,6 +3,8 @@ import bgu.spl.mics.application.messages.*;
 
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.passiveObjects.Diary;
+import bgu.spl.mics.application.passiveObjects.Ewoks;
 
 /**
  * HanSoloMicroservices is in charge of the handling {@link AttackEvent}.
@@ -14,12 +16,30 @@ import bgu.spl.mics.MicroService;
  */
 public class HanSoloMicroservice extends MicroService {
 
+    private Diary diary;
+
     public HanSoloMicroservice() {
         super("Han");
+        diary = Diary.getInstance();
     }
 
 
     @Override
     protected void initialize() {
+        subscribeBroadcast(TerminationBroadcast.class, c -> {
+            terminate();
+            diary.setHanSoloTerminate(System.currentTimeMillis());
+        });
+        subscribeEvent(AttackEvent.class, c -> {
+            Ewoks ewoks = Ewoks.getInstance();
+            try {
+                ewoks.acquireEwoks(c.getSerials());
+                Thread.sleep(c.getDuration());
+            }catch (InterruptedException e){e.printStackTrace();}
+            ewoks.releaseEwoks(c.getSerials());
+            diary.setTotalAttacks();
+            complete(c, true);
+            diary.setHanSoloFinish(System.currentTimeMillis());
+        });
     }
 }

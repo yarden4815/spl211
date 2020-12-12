@@ -4,15 +4,15 @@ import bgu.spl.mics.Event;
 
 public class AttackEvent implements Event<Boolean> {
 
-    private int duration;
+    private long duration;
     private int[] serials;
 
-    public AttackEvent(int duration, int[] serials){
+    public AttackEvent(long duration, int[] serials){
         this.duration = duration;
         this.serials = serials;
     }
 
-    public int getDuration() {
+    public long getDuration() {
         return duration;
     }
 

@@ -88,8 +88,10 @@ public class MessageBusImpl implements MessageBus {
 			for (MicroService m : v) {
 				Queue<Message> q = microServiceQueueHashMap.get(m);
 				q.add(b);
-				notifyAll();
 			}
+		}
+		synchronized (this) {
+			this.notifyAll();
 		}
 	}
 
@@ -104,8 +106,9 @@ public class MessageBusImpl implements MessageBus {
 			q.add(m);
 		}
 		futures.put(e, future);
-		notifyAll();
-
+		synchronized (this) {
+			this.notifyAll();
+		}
 		return future;
 	}
 
@@ -125,7 +128,9 @@ public class MessageBusImpl implements MessageBus {
 	public Message awaitMessage(MicroService m) throws InterruptedException {
 		Queue<Message> q = microServiceQueueHashMap.get(m);
 		while (q.isEmpty()){
-			wait();
+			synchronized (this) {
+				this.wait();
+			}
 		}
 		return q.poll();
 	}

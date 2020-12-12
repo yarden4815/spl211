@@ -144,7 +144,6 @@ public abstract class MicroService implements Runnable {
      */
     protected final void terminate() {
         stop = true;
-        MessageBusImpl.getInstance().unregister(this);
     }
 
     /**
@@ -173,6 +172,8 @@ public abstract class MicroService implements Runnable {
             if (message != null)
                 callbackHashMap.get(message).call(message);
         }
+
+        messageBus.unregister(this);
     }
 
 

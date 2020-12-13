@@ -2,6 +2,8 @@ package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.AttackEvent;
+import bgu.spl.mics.application.messages.EndAttacks;
+import bgu.spl.mics.application.messages.FinishedAttacks;
 import bgu.spl.mics.application.messages.TerminationBroadcast;
 import bgu.spl.mics.application.passiveObjects.Diary;
 import bgu.spl.mics.application.passiveObjects.Ewoks;
@@ -40,6 +42,9 @@ public class C3POMicroservice extends MicroService {
             diary.setTotalAttacks();
             complete(c, true);
             diary.setC3POFinish(System.currentTimeMillis());
+        });
+        subscribeBroadcast(EndAttacks.class, c -> {
+            sendEvent(new FinishedAttacks());
         });
     }
 }

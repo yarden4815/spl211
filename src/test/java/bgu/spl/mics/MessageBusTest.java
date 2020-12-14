@@ -6,6 +6,9 @@ import bgu.spl.mics.application.services.C3POMicroservice;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class MessageBusTest {
@@ -25,7 +28,8 @@ class MessageBusTest {
 
     @Test
     public void testComplete(){
-        int[] serials = {1,2,3};
+        List<Integer> serials = new LinkedList<>();
+        serials.add(1); serials.add(2); serials.add(3);
         Event<Boolean> event = new AttackEvent(1000, serials);
         Future<Boolean> future = messageBus.sendEvent(event);
         Message message = null;
@@ -42,7 +46,8 @@ class MessageBusTest {
     // Testing the method awaitMessage while also testing register, sendEvent and subscribeEvent.
     @Test
     void testAwaitMessage(){
-        int[] serials = {1,2,3};
+        List<Integer> serials = new LinkedList<>();
+        serials.add(1); serials.add(2); serials.add(3);
         Event<Boolean> event = new AttackEvent(1000, serials);
         Future<Boolean> fEvent = messageBus.sendEvent(event);
         Message message = null;

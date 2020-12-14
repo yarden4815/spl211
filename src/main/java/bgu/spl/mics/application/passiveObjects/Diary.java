@@ -19,7 +19,7 @@ public class Diary {
     long HanSoloTerminate;
     long C3POTerminate;
     long R2D2Terminate;
-    long LandoTeminate;
+    long LandoTerminate;
 
     private static Diary diary = new Diary();
 
@@ -32,7 +32,7 @@ public class Diary {
         HanSoloTerminate = 0;
         C3POTerminate = 0;
         R2D2Terminate = 0;
-        LandoTeminate = 0;
+        LandoTerminate = 0;
     }
 
     public static Diary getInstance(){
@@ -56,7 +56,7 @@ public class Diary {
     }
 
     public void setLandoTeminate(long landoTeminate) {
-        LandoTeminate = landoTeminate;
+        LandoTerminate = landoTeminate;
     }
 
     public void setLeiaTerminate(long leiaTerminate) {
@@ -77,7 +77,43 @@ public class Diary {
         }while (!totalAttacks.compareAndSet(totalAttacks.get(), totalAttacks.get()+1));
     }
 
-    public AtomicInteger getTotalAttacks() {
+    public AtomicInteger getNumberOfAttacks() {
         return totalAttacks;
+    }
+
+    public long getC3POFinish() {
+        return C3POFinish;
+    }
+
+    public long getC3POTerminate() {
+        return C3POTerminate;
+    }
+
+    public long getHanSoloFinish() {
+        return HanSoloFinish;
+    }
+
+    public long getHanSoloTerminate() {
+        return HanSoloTerminate;
+    }
+
+    public long getLandoTerminate() {
+        return LandoTerminate;
+    }
+
+    public long getLeiaTerminate() {
+        return LeiaTerminate;
+    }
+
+    public long getR2D2Deactivate() {
+        return R2D2Deactivate;
+    }
+
+    public long getR2D2Terminate() {
+        return R2D2Terminate;
+    }
+
+    public void resetNumberAttacks(){
+        totalAttacks = new AtomicInteger(0);
     }
 }

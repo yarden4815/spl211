@@ -1,7 +1,7 @@
 package bgu.spl.mics.application.passiveObjects;
 
 
-
+import java.util.Arrays;
 
 /**
  * Passive object representing the resource manager.
@@ -36,20 +36,25 @@ public class Ewoks {
         }
     }
 
-    public synchronized void acquireEwoks(int[] serialNum) throws InterruptedException{
+    public void acquireEwoks(int[] serialNum) throws InterruptedException{
+        Arrays.sort(serialNum);
         for (int i = 0; i < serialNum.length; i++){
             while (!ewoks[serialNum[i]].isAvailable()){
-                this.wait();
+                synchronized (this) {
+                    this.wait();
+                }
             }
             ewoks[serialNum[i]].acquire();
         }
     }
 
-    public synchronized void releaseEwoks(int[] serialNum){
+    public void releaseEwoks(int[] serialNum){
         for (int i = 0; i < serialNum.length; i++){
            ewoks[serialNum[i]].release();
         }
+        synchronized (this) {
             this.notifyAll();
+        }
     }
 
     public void clear(){

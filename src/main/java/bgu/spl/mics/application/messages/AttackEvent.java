@@ -20,7 +20,7 @@ public class AttackEvent implements Event<Boolean> {
 
     public int[] getSerials() {
         int[] res = new int[serials.size()];
-        for (Integer i : serials){
+        for (int i = 0; i < serials.size(); i++){
             res[i] = serials.get(i);
         }
         return res;

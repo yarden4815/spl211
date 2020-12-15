@@ -2,9 +2,9 @@ package bgu.spl.mics;
 
 
 
-import java.util.HashMap;
 import java.util.Queue;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -16,20 +16,25 @@ public class MessageBusImpl implements MessageBus {
 
 	private static MessageBus messageBusInstance = null;
 
-	private HashMap<MicroService, Queue<Message>> microServiceQueueHashMap;
-	private HashMap<Class<? extends Message>, Queue<MicroService>> roundRobinQueues;
-	private HashMap<Class<? extends Message>, Vector<MicroService>> broadcasts;
+	private ConcurrentHashMap<MicroService, Queue<Message>> microServiceQueueHashMap;
+	private ConcurrentHashMap<Class<? extends Message>, Queue<MicroService>> roundRobinQueues;
+	private ConcurrentHashMap<Class<? extends Message>, Vector<MicroService>> broadcasts;
 
-	private HashMap<Event, Future> futures;
+
+	private Vector<MicroService> registered;
+
+	private ConcurrentHashMap<Event, Future> futures;
+
 
 	private final Object eventLock;
 	private final Object broadcastLock;
 
 	private MessageBusImpl(){
-		microServiceQueueHashMap = new HashMap<>();
-		roundRobinQueues = new HashMap<>();
-		broadcasts = new HashMap<>();
-		futures = new HashMap<>();
+		microServiceQueueHashMap = new ConcurrentHashMap<>();
+		roundRobinQueues = new ConcurrentHashMap<>();
+		broadcasts = new ConcurrentHashMap<>();
+		futures = new ConcurrentHashMap<>();
+		registered = new Vector<>();
 		eventLock = new Object();
 		broadcastLock = new Object();
 	}
@@ -83,11 +88,13 @@ public class MessageBusImpl implements MessageBus {
 
 	@Override
 	public void sendBroadcast(Broadcast b) {
-		Vector<MicroService> v = broadcasts.get(b.getClass());
 		synchronized (broadcastLock) {
+			Vector<MicroService> v = broadcasts.get(b.getClass());
 			for (MicroService m : v) {
-				Queue<Message> q = microServiceQueueHashMap.get(m);
-				q.add(b);
+				if (registered.contains(m)){
+					Queue<Message> q = microServiceQueueHashMap.get(m);
+					q.add(b);
+				}
 			}
 		}
 		synchronized (this) {
@@ -100,10 +107,17 @@ public class MessageBusImpl implements MessageBus {
 	public <T> Future<T> sendEvent(Event<T> e){
 		Future<T> future = new Future<>();
 		Queue<MicroService> q = roundRobinQueues.get(e.getClass());
+		if (q == null) {
+			return null;
+		}
 		synchronized (eventLock) {
 			MicroService m = q.poll();
-			microServiceQueueHashMap.get(m).add(e);
-			q.add(m);
+			if (microServiceQueueHashMap.get(m) == null)
+				return null;
+			if (registered.contains(m)) {
+				microServiceQueueHashMap.get(m).add(e);
+				q.add(m);
+			}
 		}
 		futures.put(e, future);
 		synchronized (this) {
@@ -117,11 +131,15 @@ public class MessageBusImpl implements MessageBus {
 		if (microServiceQueueHashMap.containsKey(m))
 			throw new IllegalStateException();
 		microServiceQueueHashMap.put(m, new ConcurrentLinkedQueue<>());
+		registered.add(m);
 	}
 
 	@Override
 	public void unregister(MicroService m) {
+		registered.remove(m);
 		microServiceQueueHashMap.remove(m);
+		if (registered.isEmpty())
+			clean();
 	}
 
 	@Override
@@ -134,4 +152,9 @@ public class MessageBusImpl implements MessageBus {
 		}
 		return q.poll();
 	}
+
+	private void clean(){
+		messageBusInstance = null;
+	}
+
 }

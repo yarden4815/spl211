@@ -42,7 +42,11 @@ public class LeiaMicroservice extends MicroService {
     	    attacksCounter += 1;
     	    if (attacksCounter == 2){
     	        deactivationFuture = sendEvent(new DeactivationEvent());
-    	        deactivationFuture.get();
+    	        synchronized (deactivationFuture){
+    	        	try {
+						deactivationFuture.wait();
+					}catch (InterruptedException e){e.printStackTrace();}
+				}
     	        sendEvent(new BombDestroyerEvent());
             }
         });
@@ -52,5 +56,6 @@ public class LeiaMicroservice extends MicroService {
 		for (Attack attack : attacks) {
 			sendEvent(new AttackEvent(attack.getDuration(), attack.getSerials()));
 		}
+		sendBroadcast(new EndAttacks());
     }
 }

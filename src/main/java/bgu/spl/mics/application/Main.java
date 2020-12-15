@@ -7,7 +7,6 @@ import bgu.spl.mics.application.passiveObjects.Ewoks;
 import bgu.spl.mics.application.passiveObjects.Input;
 import bgu.spl.mics.application.services.*;
 import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
 
 import java.io.*;
 
@@ -66,5 +65,8 @@ public class Main {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		ewoks.clear();
+
 	}
+
 }

@@ -67,8 +67,10 @@ public class Future<T> {
      *         elapsed, return null.
      */
 	public T get(long timeout, TimeUnit unit) {
-
-		return null;
+		try {
+			unit.sleep(timeout);
+		} catch (InterruptedException e){e.printStackTrace();}
+		return result;
 	}
 
 }
